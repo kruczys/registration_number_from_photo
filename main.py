@@ -18,7 +18,6 @@ from tensorflow.keras.applications import InceptionResNetV2
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Input
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
-
 path = glob("./images/*.xml")
 labels_dict = dict(filepath=[], xmin=[], xmax=[], ymin=[], ymax=[])
 for filename in path:
