@@ -1,3 +1,6 @@
-.venv/
-.venv
 Automatic*
+.venv/
+object_detection/
+object_detection*
+images/
+.env
