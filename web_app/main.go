@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+    "strings"
 
 	"github.com/fogleman/gg"
 	"github.com/gin-gonic/gin"
@@ -91,7 +92,7 @@ func handleUpload(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "result.html", gin.H{
-		"plate":            plate,
+		"plate":            strings.ToUpper(plate),
 		"originalImageUrl": originalImageUrl,
 		"boxedImageUrl":    boxedImageUrl,
 	})
