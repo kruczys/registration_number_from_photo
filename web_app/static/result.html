@@ -1,0 +1,7 @@
+{{ if .result }}
+    <h2>Recognized Plate: {{ index .result.results 0 "plate" }}</h2>
+    <script>htmx.find('#progress').setAttribute("value", 0)</script>
+{{ end }}
+{{ if .imageUrl }}
+    <img src={{ .imageUrl }} alt="Uploaded Image" style="width: 300px; height: 200px;">
+{{ end }}
