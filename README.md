@@ -26,7 +26,7 @@ Initially, I attempted to build a deep neural network model for license plate re
 
 ### Prerequisites
 
-- Go 1.22.3 or later
+- [Go](https://go.dev/dl/) 1.22.3 or later
 - [Git](https://git-scm.com/)
 - An API key from [parkpow](https://github.com/parkpow/deep-license-plate-recognition)
 
@@ -83,6 +83,7 @@ Initially, I attempted to build a deep neural network model for license plate re
 
 ## Acknowledgements
 
+- [Go](https://go.dev/dl/) for being very cool. :) :alien:
 - [parkpow](https://github.com/parkpow/deep-license-plate-recognition) for the Deep License Plate Recognition API which works lovely.
 - [Gin Web Framework](https://github.com/gin-gonic/gin) for making web development in Go a breeze :heart:.
 - [HTMX](https://htmx.org/) for providing an easy way to handle AJAX requests in HTML.
