@@ -46,26 +46,26 @@ Initially, I attempted to build a deep neural network model for license plate re
     ```sh
     API_KEY=your_api_key_here
     ```
+    
+### Using Go
 
-3. Install dependencies:
+1. Install dependencies:
 
     ```sh
     go mod tidy
     ```
 
-4. Run the application:
+2. Run the application:
 
     ```sh
     go run main.go
     ```
 
-### Using Docker (Optional)
+### Using Docker
 
 1. Build the Docker image:
 
     ```sh
-    git clone https://github.com/kruczys/registration_number_from_photo.git
-    cd registration_number_from_photo/web_app
     docker build -t registration_number_from_photo .
     ```
 
