@@ -36,7 +36,7 @@ Initially, I attempted to build a deep neural network model for license plate re
 
     ```sh
     git clone https://github.com/kruczys/registration_number_from_photo.git
-    cd license-plate-recognizer/web_app
+    cd registration_number_from_photo/web_app
     ```
 
 2. Set up environment variables:
@@ -65,14 +65,14 @@ Initially, I attempted to build a deep neural network model for license plate re
 
     ```sh
     git clone https://github.com/kruczys/registration_number_from_photo.git
-    cd license-plate-recognizer/web_app
-    docker build -t license-plate-recognizer .
+    cd registration_number_from_photo/web_app
+    docker build -t registration_number_from_photo .
     ```
 
 2. Run the Docker container:
 
     ```sh
-    docker run -p 8080:8080 --env-file .env license-plate-recognizer
+    docker run -p 8080:8080 --env-file .env registration_number_from_photo
     ```
 
 ## Usage
