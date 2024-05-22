@@ -2,25 +2,38 @@ body {
     height: 100vh;
     width: 100vw;
     font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    padding: 0;
+    margin: 0;
 }
 
 main {
-    height: 70%;
+    height: 100%;
+    background-color: #c9e5f0;
+}
+
+#result {
+    background-color: white;
+    height: 100%;
+    padding: 10px;
+    width: 50%;
 }
 
 header {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
+    background-color: #38819c;
 }
 
 form {
+    background-color: #007bff;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    width: 20%;
+    width: 100%;
 }
 
 #flex-container {
@@ -28,10 +41,15 @@ form {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    height: 100%;
+}
+
+input {
+    width: 25%;
 }
 
 #button {
-    padding: 10px;
+    padding: 0px;
     background-color: #007bff;
     color: white;
     border: none;
@@ -40,4 +58,25 @@ form {
 
 #button:hover {
     background-color: #0056b3;
+}
+
+#images-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 20px;
+}
+
+#plate-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#plate-container * {
+    margin-bottom: 0;
 }

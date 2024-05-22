@@ -4,32 +4,31 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/color"
+	"image/jpeg"
 	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
-    "image"
-    "image/color"
-    "image/jpeg"
-    
 
-    "github.com/fogleman/gg"
+	"github.com/fogleman/gg"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
 type PlateResult struct {
-    Results []struct {
-        Box struct {
-            Xmin int `json:"xmin"`
-            Ymin int `json:"ymin"`
-            Xmax int `json:"xmax"`
-            Ymax int `json:"ymax"`
-        } `json:"box"`
-        Plate string `json:"plate"`
-    } `json:"results"`
+	Results []struct {
+		Box struct {
+			Xmin int `json:"xmin"`
+			Ymin int `json:"ymin"`
+			Xmax int `json:"xmax"`
+			Ymax int `json:"ymax"`
+		} `json:"box"`
+		Plate string `json:"plate"`
+	} `json:"results"`
 }
 
 func main() {
@@ -41,7 +40,7 @@ func main() {
 	router.MaxMultipartMemory = 8 << 20
 
 	router.Static("/static", "./static")
-    router.Static("/uploads", "./uploads")
+	router.Static("/uploads", "./uploads")
 	router.LoadHTMLGlob("./static/*.html")
 
 	router.GET("/", func(c *gin.Context) {
@@ -52,7 +51,8 @@ func main() {
 		c.Status(http.StatusNoContent)
 	})
 
-	router.POST("/upload", handleUpload)
+	// router.POST("/upload", handleUploadTesting)
+    router.POST("/upload", handleUpload)
 	router.Run(":8080")
 }
 
@@ -73,7 +73,6 @@ func handleUpload(c *gin.Context) {
 		return
 	}
 
-
 	plateResult, err := recognizePlate(filePath)
 	if err != nil {
 		log.Println("Error saving the file:", err)
@@ -81,15 +80,28 @@ func handleUpload(c *gin.Context) {
 		return
 	}
 
-    boxedImagePath := drawBoundingBox(filePath, plateResult)
+	boxedImagePath := drawBoundingBox(filePath, plateResult)
 
-    originalImageUrl := "/uploads/" + filepath.Base(filePath)
-    boxedImageUrl := "/uploads/" + filepath.Base(boxedImagePath)
+	originalImageUrl := "/uploads/" + filepath.Base(filePath)
+	boxedImageUrl := "/uploads/" + filepath.Base(boxedImagePath)
+
+	plate := ""
+	if len(plateResult.Results) > 0 {
+		plate = plateResult.Results[0].Plate
+	}
 
 	c.HTML(http.StatusOK, "result.html", gin.H{
-        "result": plateResult,
-        "originalImageUrl": originalImageUrl,
-        "boxedImageUrl": boxedImageUrl,
+		"plate":            plate,
+		"originalImageUrl": originalImageUrl,
+		"boxedImageUrl":    boxedImageUrl,
+	})
+}
+
+func handleUploadTesting(c *gin.Context) {
+    c.HTML(http.StatusOK, "result.html", gin.H{
+        "plate": "blabla",
+        "originalImageUrl": "uploads/2.jpeg",
+        "boxedImageUrl": "uploads/2.jpeg",
     })
 }
 
@@ -132,6 +144,7 @@ func recognizePlate(filePath string) (PlateResult, error) {
 	if err != nil {
 		return PlateResult{}, fmt.Errorf("request failed: %w", err)
 	}
+
 	defer resp.Body.Close()
 
 	var result PlateResult
@@ -143,35 +156,35 @@ func recognizePlate(filePath string) (PlateResult, error) {
 }
 
 func drawBoundingBox(imagePath string, plateResult PlateResult) string {
-    imgFile, err := os.Open(imagePath)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer imgFile.Close()
+	imgFile, err := os.Open(imagePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer imgFile.Close()
 
-    img, _, err := image.Decode(imgFile)
-    if err != nil {
-        log.Fatal(err)
-    }
+	img, _, err := image.Decode(imgFile)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    dc := gg.NewContextForImage(img)
-    dc.SetColor(color.RGBA{255, 0, 0, 255}) 
-    dc.SetLineWidth(2)
+	dc := gg.NewContextForImage(img)
+	dc.SetColor(color.RGBA{255, 0, 0, 255})
+	dc.SetLineWidth(2)
 
-    for _, result := range plateResult.Results {
-        dc.DrawRectangle(float64(result.Box.Xmin), float64(result.Box.Ymin),
-            float64(result.Box.Xmax-result.Box.Xmin), float64(result.Box.Ymax-result.Box.Ymin))
-        dc.Stroke()
-    }
+	for _, result := range plateResult.Results {
+		dc.DrawRectangle(float64(result.Box.Xmin), float64(result.Box.Ymin),
+			float64(result.Box.Xmax-result.Box.Xmin), float64(result.Box.Ymax-result.Box.Ymin))
+		dc.Stroke()
+	}
 
-    boxedImagePath := filepath.Join("uploads", "boxed_"+filepath.Base(imagePath))
-    outFile, err := os.Create(boxedImagePath)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer outFile.Close()
+	boxedImagePath := filepath.Join("uploads", "boxed_"+filepath.Base(imagePath))
+	outFile, err := os.Create(boxedImagePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer outFile.Close()
 
-    jpeg.Encode(outFile, dc.Image(), nil)
+	jpeg.Encode(outFile, dc.Image(), nil)
 
-    return boxedImagePath
+	return boxedImagePath
 }

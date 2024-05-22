@@ -2,19 +2,25 @@
     {{ if .originalImageUrl }}
     <div class="image-wrapper">
         <h3>Original Image</h3>
-        <img src={{ .originalImageUrl }} alt="Original Image" style="max-width: 100%;">
+        <img src={{ .originalImageUrl }} alt="Original Image" style="width: 300px;">
     </div>
     {{ end }}
     {{ if .boxedImageUrl }}
     <div class="image-wrapper">
-        <h3>Image with Bounding Box</h3>
-        <img src={{ .boxedImageUrl }} alt="Image with Bounding Box" style="max-width: 100%;">
+        <h3>Image with plate in a box :)</h3>
+        <img src={{ .boxedImageUrl }} alt="Image with Bounding Box" style="width: 300px;">
     </div>
     {{ end }}
 </div>
-{{ if .result }}
-<h2>Recognized Plate: {{ index .result.results 0 "plate" }}</h2>
+{{ if .plate }}
+    <div id="plate-container">
+        <h3>Rozpoznana tablica: </h3>
+        <p>{{ .plate }}</p>
+    </div>
+    <script>
+        htmx.find('#progress').setAttribute("value", 0)
+    </script>
 {{ else }}
-<h2>No results found</h2>
+    <h2>No results found</h2>
 {{ end }}
 
