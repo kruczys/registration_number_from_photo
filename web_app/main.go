@@ -10,10 +10,27 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+    "image"
+    "image/color"
+    "image/jpeg"
+    
 
+    "github.com/fogleman/gg"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+type PlateResult struct {
+    Results []struct {
+        Box struct {
+            Xmin int `json:"xmin"`
+            Ymin int `json:"ymin"`
+            Xmax int `json:"xmax"`
+            Ymax int `json:"ymax"`
+        } `json:"box"`
+        Plate string `json:"plate"`
+    } `json:"results"`
+}
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -64,18 +81,22 @@ func handleUpload(c *gin.Context) {
 		return
 	}
 
-    imageUrl := "/uploads/" + file.Filename
+    boxedImagePath := drawBoundingBox(filePath, plateResult)
+
+    originalImageUrl := "/uploads/" + filepath.Base(filePath)
+    boxedImageUrl := "/uploads/" + filepath.Base(boxedImagePath)
 
 	c.HTML(http.StatusOK, "result.html", gin.H{
         "result": plateResult,
-        "imageUrl": imageUrl,
+        "originalImageUrl": originalImageUrl,
+        "boxedImageUrl": boxedImageUrl,
     })
 }
 
-func recognizePlate(filePath string) (map[string]interface{}, error) {
+func recognizePlate(filePath string) (PlateResult, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
+		return PlateResult{}, fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 
@@ -84,24 +105,24 @@ func recognizePlate(filePath string) (map[string]interface{}, error) {
 
 	fileWriter, err := mw.CreateFormFile("upload", filepath.Base(filePath))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create form file: %w", err)
+		return PlateResult{}, fmt.Errorf("failed to create form file: %w", err)
 	}
 
 	if _, err = io.Copy(fileWriter, file); err != nil {
-		return nil, fmt.Errorf("failed to copy file content: %w", err)
+		return PlateResult{}, fmt.Errorf("failed to copy file content: %w", err)
 	}
 
 	if err = mw.WriteField("regions", "pl"); err != nil {
-		return nil, fmt.Errorf("failed to write field: %w", err)
+		return PlateResult{}, fmt.Errorf("failed to write field: %w", err)
 	}
 
 	if err = mw.Close(); err != nil {
-		return nil, fmt.Errorf("failed to close multipart writer: %w", err)
+		return PlateResult{}, fmt.Errorf("failed to close multipart writer: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", "https://api.platerecognizer.com/v1/plate-reader/", body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return PlateResult{}, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Authorization", "Token "+os.Getenv("API_KEY"))
 	req.Header.Set("Content-Type", mw.FormDataContentType())
@@ -109,14 +130,48 @@ func recognizePlate(filePath string) (map[string]interface{}, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
+		return PlateResult{}, fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
-	var result map[string]interface{}
+	var result PlateResult
 	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+		return PlateResult{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	return result, nil
+}
+
+func drawBoundingBox(imagePath string, plateResult PlateResult) string {
+    imgFile, err := os.Open(imagePath)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer imgFile.Close()
+
+    img, _, err := image.Decode(imgFile)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    dc := gg.NewContextForImage(img)
+    dc.SetColor(color.RGBA{255, 0, 0, 255}) 
+    dc.SetLineWidth(2)
+
+    for _, result := range plateResult.Results {
+        dc.DrawRectangle(float64(result.Box.Xmin), float64(result.Box.Ymin),
+            float64(result.Box.Xmax-result.Box.Xmin), float64(result.Box.Ymax-result.Box.Ymin))
+        dc.Stroke()
+    }
+
+    boxedImagePath := filepath.Join("uploads", "boxed_"+filepath.Base(imagePath))
+    outFile, err := os.Create(boxedImagePath)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer outFile.Close()
+
+    jpeg.Encode(outFile, dc.Image(), nil)
+
+    return boxedImagePath
 }
