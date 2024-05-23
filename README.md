@@ -87,6 +87,7 @@ Initially, I attempted to build a deep neural network model for license plate re
 - [parkpow](https://github.com/parkpow/deep-license-plate-recognition) for the Deep License Plate Recognition API which works lovely.
 - [Gin Web Framework](https://github.com/gin-gonic/gin) for making web development in Go a breeze :heart:.
 - [HTMX](https://htmx.org/) for providing an easy way to handle AJAX requests in HTML.
+- [Aslan Ahmedov's guide to create ALPR](https://www.kaggle.com/code/aslanahmedov/automatic-number-plate-recognition) for teaching me how to create my own ALPR.
 
 ## Contact
 
